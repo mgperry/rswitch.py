@@ -106,6 +106,8 @@ if len(argv) == 2:
             print("\nThere are not that many versions of R installed. Available versions are:\n")
             print_all(r_versions)
             exit(0)
+    elif v.lower() == "devel":
+        path = r_versions[-1]["v"]
     else:
         print("\nERROR: Argument not understood\n")
         print(usage)
@@ -119,6 +121,9 @@ if len(argv) == 2:
             unlink("Current")
         symlink(path, "Current")
         print("\nSwitched to version %s\n" % path)
+
+    if [r["long"] for r in r_versions if r["v"] == path][0] is None:
+        print("WARNING: Current R version does not appear to be correctly installed\n")
 
     exit(0)
 
