@@ -6,7 +6,7 @@ from sys import argv, stdin
 from re import match
 
 version_dir = "/Library/Frameworks/R.framework/Versions/"
-usage = "Usage: rswitch [version]\n"
+usage = "\nUsage: rswitch [version]"
 
 if not isdir(version_dir):
     print("\n%s is not a directory.\n")
@@ -37,9 +37,9 @@ for r in r_versions:
         r["long"] = None
 
 if len(argv) > 2:
-    print("\nERROR: More than 1 arguments supplied.")
-    print("")
+    print("\nERROR: More than 1 argument supplied.")
     print(usage)
+    print("")
     exit(1)
 
 def print_version(i, r):
@@ -59,12 +59,13 @@ def print_version(i, r):
 def print_all(r_v):
     for i, r in enumerate(r_versions):
         print_version(i+1, r_versions[i])
-    print("")
 
 if len(argv) == 1:
     print("\nAvalable versions:\n")
     print_all(r_versions)
     print(usage)
+    print("")
+    exit(0)
 
 is_int = lambda x: match(r"^\d+$", x) is not None
 is_short = lambda x: match(r"^\d\.\d$", x) is not None
@@ -81,13 +82,14 @@ if len(argv) == 2:
         else:
             print("\nVersion %s is not installed. Available versions are:\n" % v)
             print_all(r_versions)
+            print("")
             exit(0)
     elif is_long(v):
         if v in [r["long"] for r in r_versions]:
             path = v[0:3]
         elif v[0:3] in [r["v"] for r in r_versions]:
             available = [r["long"] for r in r_versions if r["v"] == v[0:3]]
-            msg = "\nVersion %s is not installed, however R %s is still available as version %s.\n"
+            msg = "\nVersion %s is not installed, however R %s is still available as version %s."
             print(msg % (v, v[0:3], available[0]))
             print("Switch to version %s? [Y/n]" % available[0])
             answer = stdin.read(1)
@@ -114,16 +116,17 @@ if len(argv) == 2:
         exit(1)
 
     if path == current:
-        print("\nVersion %s already in use.\n" % path)
+        print("\nVersion %s already in use." % path)
     else:
         chdir(version_dir)
         if current is not None:
             unlink("Current")
         symlink(path, "Current")
-        print("\nSwitched to version %s\n" % path)
+        print("\nSwitched to version %s" % path)
 
     if [r["long"] for r in r_versions if r["v"] == path][0] is None:
-        print("WARNING: Current R version does not appear to be correctly installed\n")
+        print("\nWARNING: Current R version does not appear to be correctly installed")
 
+    print("")
     exit(0)
 
