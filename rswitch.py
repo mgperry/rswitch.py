@@ -1,13 +1,10 @@
 #!/usr/local/bin/python3
 from plistlib import load, InvalidFileException
 from os.path import dirname, basename, realpath, join, isdir, islink, abspath
-from os import walk, symlink, chdir, unlink
+from os import walk, symlink, unlink
 from sys import argv, stdin, exit
 from re import match
-
-# optionally take from environment
-version_dir = "/Library/Frameworks/R.framework/Versions/"
-usage = "\nUsage: rswitch [version]"
+from argparse import ArgumentParser, ArgumentTypeError
 
 is_int = lambda x: match(r"^\d+$", x) is not None
 
@@ -66,9 +63,20 @@ def version_info(lst):
         print("[{0}]".format(i+1).rjust(8), end="")
         print(r)
 
-def main(argv):
+def IndexOrVersion(v):
+    try:
+        return match("(\d)(\.\d)?(\.\d)?", v).group(0)
+    except:
+        raise ArgumentTypeError("Argument must be index or version (x.y[.z])")
+
+if __name__ == "__main__":
+    parser = ArgumentParser(description='Switch R Version.')
+    parser.add_argument("v", type=IndexOrVersion, nargs="?")
+    args = parser.parse_args()
+
+    version_dir = "/Library/Frameworks/R.framework/Versions/"
     if not isdir(version_dir):
-        print("\n%s is not a directory.\n")
+        print("\n%s is not a directory.\n" % version_dir)
         exit(1)
 
     r_versions = [RVersion(join(version_dir, x)) for x in next(walk(version_dir))[1] if x != "Current"]
@@ -81,19 +89,13 @@ def main(argv):
     if not any([x.in_use for x in r_versions]):
         print("\nNB: No Current version in use.")
 
-    if len(argv) == 1:
+    v = args.v
+
+    if v is None:
         version_info(r_versions)
-        print(usage)
+        print("\nUsage: rswitch [index|version]")
         print("")
         exit(0)
-
-    if len(argv) > 2:
-        print("\nERROR: More than 1 argument supplied.")
-        print(usage)
-        print("")
-        exit(1)
-
-    v = argv[1]
 
     if is_int(v):
         if int(v) < 1:
@@ -102,8 +104,9 @@ def main(argv):
         try:
             r = r_versions[int(v)-1]
         except IndexError:
-            print("\nThere are not that many versions of R installed. Available versions are:\n")
+            print("\nThere are not that many versions of R installed. Available versions are:")
             version_info(r_versions)
+            print("")
             exit(0)
     else:
         r = next(filter(lambda x: x.has_version(v), r_versions), None)
@@ -116,6 +119,4 @@ def main(argv):
 
     print("")
     exit(0)
-
-main(argv)
 
