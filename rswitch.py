@@ -56,7 +56,6 @@ class RVersion:
 
         return False
 
-
 def version_info(lst):
     print("\nAvalable versions:\n")
     for i, r in enumerate(lst):
@@ -71,10 +70,11 @@ def IndexOrVersion(v):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Switch R Version.')
-    parser.add_argument("v", type=IndexOrVersion, nargs="?")
+    parser.add_argument("version", type=IndexOrVersion, nargs="?")
+    parser.add_argument("-d", "--directory", default="/Library/Frameworks/R.framework/Versions/")
     args = parser.parse_args()
 
-    version_dir = "/Library/Frameworks/R.framework/Versions/"
+    version_dir = args.directory
     if not isdir(version_dir):
         print("\n%s is not a directory.\n" % version_dir)
         exit(1)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     if not any([x.in_use for x in r_versions]):
         print("\nNB: No Current version in use.")
 
-    v = args.v
+    v = args.version
 
     if v is None:
         version_info(r_versions)
